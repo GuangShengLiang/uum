@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration debug="false">
+    <property name="LOG_HOME" value="/data/logs/uum-svr-web"/>
+
+    <property name="RSYSLOG_PORT" value="514"/>
+    <property name="RSYSLOG_HOST" value="172.16.5.104"/>
+
+    <property name="MSG_PATTERN" value="%d{ISO8601} -- %msg%n"/>
+    <property name="NORMAL_PATTERN" value="%d{ISO8601} %-5level -- %-50.50logger -- %msg%n"/>
+    <property name="SERIOUS_PATTERN" value="%d{ISO8601} [%-16.16thread] %-5level -- %-60.60class [%4line] -- %msg%n"/>
+    <property name="LOG_PATTERN" value="%msg%n"/>
+
+    <timestamp key="byDay" datePattern="yyyyMMdd"/>
+    <timestamp key="bySecond" datePattern="yyyyMMdd'T'HHmmss"/>
+
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+      <!--  <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>DEBUG</level>
+        </filter>-->
+        <encoder>
+            <pattern>${SERIOUS_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="DEBUG" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>DEBUG</level>
+        </filter>
+        <file>${LOG_HOME}/debug.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_HOME}/debug.%d{yyyyMMdd}.log</fileNamePattern>
+            <MaxHistory>30</MaxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${SERIOUS_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="INFO" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>INFO</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+        <file>${LOG_HOME}/info.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_HOME}/info.%d{yyyyMMdd}.log</fileNamePattern>
+            <MaxHistory>30</MaxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${NORMAL_PATTERN}</pattern>
+        </encoder>
+    </appender>
+    <!-- special level -->
+    <appender name="ERROR" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>WARN</level>
+        </filter>
+        <file>${LOG_HOME}/error.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_HOME}/error.%d{yyyyMMdd}.log</fileNamePattern>
+            <MaxHistory>30</MaxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${SERIOUS_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="api_log" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_HOME}/stat/current/api.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_HOME}/stat/history/api.%d{yyyyMMdd}.log</fileNamePattern>
+            <MaxHistory>30</MaxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${MSG_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="api_client_log" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_HOME}/stat/current/api_client.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_HOME}/stat/history/api_client.%d{yyyyMMdd}.log</fileNamePattern>
+            <MaxHistory>30</MaxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${MSG_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="SYSLOG-NORMAL" class="ch.qos.logback.classic.net.SyslogAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>DEBUG</level>
+        </filter>
+        <syslogHost>${RSYSLOG_HOST}</syslogHost>
+        <port>${RSYSLOG_PORT}</port>
+        <facility>LOCAL1</facility>
+        <suffixPattern>${NORMAL_PATTERN}</suffixPattern>
+    </appender>
+
+    <appender name="SYSLOG-SERIOUS" class="ch.qos.logback.classic.net.SyslogAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>WARN</level>
+        </filter>
+        <syslogHost>${RSYSLOG_HOST}</syslogHost>
+        <port>${RSYSLOG_PORT}</port>
+        <facility>LOCAL1</facility>
+        <suffixPattern>${SERIOUS_PATTERN}</suffixPattern>
+    </appender>
+
+
+    <logger name="api" level="INFO" additivity="false">
+        <appender-ref ref="api_log"/>
+        <appender-ref ref="SYSLOG-NORMAL"/>
+        <appender-ref ref="SYSLOG-SERIOUS"/>
+    </logger>
+
+    <logger name="druid.sql.Statement" level="DEBUG"/>
+
+    <root level="INFO">
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="INFO"/>
+        <appender-ref ref="ERROR"/>
+
+        <appender-ref ref="SYSLOG-SERIOUS"/>
+    </root>
+</configuration>

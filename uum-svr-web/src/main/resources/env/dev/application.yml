@@ -1,0 +1,41 @@
+
+server:
+      port: 80
+# spring 配置
+spring:
+    datasource:
+        url: jdbc:mysql://localhost:3306/uum?useUnicode=true&characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull
+        username: root
+        password: 123456
+        type: com.zaxxer.hikari.HikariDataSource
+        driver-class-name: com.mysql.jdbc.Driver
+        hikari:
+           connection-test-query: SELECT 1 FROM DUAL
+           minimum-idle: 1
+           maximum-pool-size: 20
+           idle-timeout: 10000
+    redis:
+          cluster:
+                  nodes: 172.16.0.204:9092,172.16.0.204:9093,172.16.0.204:9094
+#    jackson:
+#            date-format: yyyy-MM-dd HH:mm:ss
+#    mvc:
+#        mvc.date-format: yyyy-MM-dd HH:mm:ss
+
+#          timeout: 5000
+#          pool:
+#               max-active: 8
+#               max-idle: 8
+#               min-idle: 0
+#               max-wait: -1
+
+    mvc:
+        view:
+            prefix: /templates/
+            suffix: .ftl
+    freemarker:
+        cache: false
+        request-context-attribute: request
+        charset: UTF-8
+        content-type: text/html
+        enabled: true
